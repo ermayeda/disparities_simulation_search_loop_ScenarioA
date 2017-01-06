@@ -221,9 +221,9 @@ clear
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death45to50_exp0 = $target_p_death45to50_exp0 //0.0469
+   local target_p_death45to50_exp0 = $target_p_death45to50_exp0 
    *add lower bound guess here
-   local lambda_45to50l = $lambda_45to50l	//0.0129
+   local lambda_45to50l = $lambda_45to50l	
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -12888,9 +12888,9 @@ clear
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_45to50 = 0.66
+   local target_g1_45to50 = $target_g1_45to50
    *add lower bound guess here
-   local g1_45to50l = 0.1
+   local g1_45to50l = $g1_45to50l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -12960,7 +12960,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -13279,16 +13279,16 @@ global g1_45to50_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 50-55	  			***/
+/***		Find baseline MORTALITY hazard for blacks age 50-55	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_50to55 = 0.59
+   local target_g1_50to55 = $target_g1_50to55
    *add lower bound guess here
-   local g1_50to55l = 0.1
+   local g1_50to55l = $g1_50to55l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -13358,7 +13358,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -13719,16 +13719,16 @@ global g1_50to55_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 55-60	  			***/
+/***		Find baseline MORTALITY hazard for blacks age 55-60	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_55to60 = 0.48
+   local target_g1_55to60 = $target_g1_55to60 
    *add lower bound guess here
-   local g1_55to60l = 0
+   local g1_55to60l = $g1_55to60l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -13798,7 +13798,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -14200,16 +14200,16 @@ global g1_55to60_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 60-65  			***/ 
+/***		Find baseline MORTALITY hazard for blacks age 60-65  	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_60to65 = 0.32
+   local target_g1_60to65 = $target_g1_60to65
    *add lower bound guess here
-   local g1_60to65l = 0
+   local g1_60to65l = $g1_60to65l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -14279,7 +14279,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -14724,16 +14724,16 @@ global g1_60to65_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 65-70 			***/ 
+/***		Find baseline MORTALITY hazard for blacks age 65-70 	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_65to70 = 0.19
+   local target_g1_65to70 = $target_g1_65to70
    *add lower bound guess here
-   local g1_65to70l = -0.05
+   local g1_65to70l = $g1_65to70l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -14803,7 +14803,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -15289,16 +15289,16 @@ global g1_65to70_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 70-75				***/ 
+/***		Find baseline MORTALITY hazard for blacks age 70-75	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_70to75 = 0.10
+   local target_g1_70to75 = $target_g1_70to75
    *add lower bound guess here
-   local g1_70to75l = -0.15
+   local g1_70to75l = $g1_70to75l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -15368,7 +15368,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -15896,16 +15896,16 @@ global g1_70to75_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 75-80				***/ 
+/***		Find baseline MORTALITY hazard for blacks age 75-80	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_75to80 = -0.05
+   local target_g1_75to80 = $target_g1_75to80
    *add lower bound guess here
-   local g1_75to80l = -0.25
+   local g1_75to80l = $g1_75to80l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -15975,7 +15975,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -16544,16 +16544,16 @@ global g1_75to80_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 80-85				***/ 
+/***		Find baseline MORTALITY hazard for blacks age 80-85	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_80to85 = -0.10
+   local target_g1_80to85 = $target_g1_80to85
    *add lower bound guess here
-   local g1_80to85l = -0.40
+   local g1_80to85l = $g1_80to85l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -16623,7 +16623,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -17236,16 +17236,16 @@ global g1_80to85_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 85-90				***/ 
+/***		Find baseline MORTALITY hazard for blacks age 85-90	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_85to90 = -0.19
+   local target_g1_85to90 = $target_g1_85to90
    *add lower bound guess here
-   local g1_85to90l = -0.55
+   local g1_85to90l = $g1_85to90l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -17315,7 +17315,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -17971,16 +17971,16 @@ global g1_85to90_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 90-95				***/ 
+/***		Find baseline MORTALITY hazard for blacks age 90-95	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_90to95 = -0.24
+   local target_g1_90to95 = $target_g1_90to95
    *add lower bound guess here
-   local g1_90to95l = -0.70
+   local g1_90to95l = $g1_90to95l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -18050,7 +18050,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
