@@ -1,12 +1,12 @@
 /******************************************************************************/
-/***	Scenario A (U influences stroke but not mortality) search loop 		***/
-/***	program.															***/
+/***	Scenario A (U influences stroke but not mortality) search loop 	    ***/
+/***	program.							    ***/
 /***	This program searches for baseline mortality hazards (after age 45) ***/
-/***	for exp=0 and exp=1 to line up with US Life Tables. 				***/
+/***	for exp=0 and exp=1 to line up with US Life Tables. 		    ***/
 /***	The search loop is needed because stroke kills people: pstrokedeath ***/
-/***	die at stroke and g4 for effect of stroke history on death.		 	***/
-/***	The program also searches for baseline stroke hazards for whites,	***/
-/***	since U causes stroke.												***/
+/***	die at stroke and g4 for effect of stroke history on death.	    ***/
+/***	The program also searches for baseline stroke hazards for whites,   ***/
+/***	since U causes stroke.						    ***/
 /******************************************************************************/
 
 set more off
@@ -116,12 +116,21 @@ global pstrokedeath = 0.25
 /******************************************************************************/
 
 
-* challenge: we want the same number of peopel having strokes after we add U.
+* challenge: we want the same number of people having strokes after we add U.
 
 *this is a do file to run the data generating do file with different values for the baseline mortality odds
-* start with a value for the target that is definitely toolow,
-* then it should notify you at the first increment where you are no longer
-* too low
+* start with a value for the target that is definitely too low for the target stroke or motality rate,
+* then Stata will  at the first increment where the start value results in a stroke/mortality rate
+* >=the target stroke/mortality rate
+
+*Target values
+local target_p_death45to50_exp0 = 0.0469
+
+
+*Starting values
+local lambda_45to50l = 0
+
+
 
 /***************************************************************************************************************/
 /***************************************************************************************************************/
@@ -138,9 +147,9 @@ clear
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death45to50_exp0 = 0.0469
+   local target_p_death45to50_exp0 = `target_p_death45to50_exp0' //0.0469
    *add lower bound guess here
-   local lambda_45to50l = 0	//0.0129
+   local lambda_45to50l = `lambda_45to50l'	//0.0129
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -262,15 +271,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -632,15 +641,15 @@ forvalues i=1/5 {
 		at each interval. 
 		a. Each person's underlying time to death is generated for each age interval, 
 		conditional on the past provided the person has not died in a previous interval, 
-		under an exponential survival distribtion. If the person’s generated survival 
+		under an exponential survival distribtion. If the personÂ’s generated survival 
 		time exceeds the length of the interval between study visits j and j+1, 
 		she is considered alive at study visit j+1 and a new survival time is 
 		generated for the next interval conditional on history up to the start of the 
-		interval, and the process is repeated until the person’s survival time falls 
+		interval, and the process is repeated until the personÂ’s survival time falls 
 		within a given interval or the end of the study, whichever comes first. Each 
-		person’s hazard function is defined as:
+		personÂ’s hazard function is defined as:
 		h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-		A person’s survival time for a given time interval at risk is generated using 
+		A personÂ’s survival time for a given time interval at risk is generated using 
 		the inverse cumulative hazard function transformation formula described by 
 		Bender et al. (Stat Med 2011)
 		b. Stroke code is adapted for survival time code.*/
@@ -1051,15 +1060,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -1463,15 +1472,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -1928,15 +1937,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -2380,15 +2389,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -2891,15 +2900,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -3386,15 +3395,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -3944,15 +3953,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -4481,15 +4490,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -5086,15 +5095,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -5664,15 +5673,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -6316,15 +6325,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -6937,15 +6946,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -7635,15 +7644,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -8298,15 +8307,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -9041,15 +9050,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -9747,15 +9756,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -10539,15 +10548,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -11288,15 +11297,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -12129,15 +12138,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -12929,15 +12938,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -13327,15 +13336,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -13767,15 +13776,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -14248,15 +14257,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -14772,15 +14781,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -15337,15 +15346,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -15944,15 +15953,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -16592,15 +16601,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -17284,15 +17293,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -18019,15 +18028,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -18798,15 +18807,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
