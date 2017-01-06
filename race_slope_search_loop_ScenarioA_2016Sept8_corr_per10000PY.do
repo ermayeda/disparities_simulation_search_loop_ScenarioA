@@ -153,16 +153,16 @@ global lambda_90to95l = 0.10
 
 /*Target and starting values for baseline stroke hazard for whites*/
 *Target values
-global target_strokerate45to50_exp0 = 5.1
-global target_strokerate50to55_exp0 = 10.0
-global target_strokerate55to60_exp0 = 19.7
-global target_strokerate60to65_exp0 = 32.8
-global target_strokerate65to70_exp0 = 46.2
-global target_strokerate70to75_exp0 = 65.1
-global target_strokerate75to80_exp0 = 98.1
-global target_strokerate80to85_exp0 = 117.3
-global target_strokerate85to90_exp0 = 128.1
-global target_strokerate90to95_exp0 = 143.0
+global target_strokerate45to50_exp0 = 4.8
+global target_strokerate50to55_exp0 = 11.3
+global target_strokerate55to60_exp0 = 20.3
+global target_strokerate60to65_exp0 = 32.9
+global target_strokerate65to70_exp0 = 48.0
+global target_strokerate70to75_exp0 = 68.8
+global target_strokerate75to80_exp0 = 101.6
+global target_strokerate80to85_exp0 = 127.3
+global target_strokerate85to90_exp0 = 142.2
+global target_strokerate90to95_exp0 = 166.6
 
 *Starting values
 global stk_lambda_exp0_45to50l = 0
