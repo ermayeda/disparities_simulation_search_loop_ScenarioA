@@ -119,37 +119,111 @@ global pstrokedeath = 0.25
 * challenge: we want the same number of people having strokes after we add U.
 
 *this is a do file to run the data generating do file with different values for the baseline mortality odds
-* start with a value for the target that is definitely too low for the target stroke or motality rate,
-* then Stata will  at the first increment where the start value results in a stroke/mortality rate
-* >=the target stroke/mortality rate
+*start with a value for the target that is definitely too low for the target stroke or cumulative mortality
+*within each age band. The search loop will stop at the first increment where the start value results in a 
+*stroke rate/cumulative mortality >=the target stroke rate/cumulative mortality.
 
+/*Target and starting values for baseline mortality hazard for whites*/
 *Target values
-local target_p_death45to50_exp0 = 0.0469
-
+global target_p_death45to50_exp0 = 0.0469
+global target_p_death50to55_exp0 = 0.0623
+global target_p_death55to60_exp0 = 0.0890
+global target_p_death60to65_exp0 = 0.1267
+global target_p_death65to70_exp0 = 0.1846
+global target_p_death70to75_exp0 = 0.2726
+global target_p_death75to80_exp0 = 0.3840
+global target_p_death80to85_exp0 = 0.5259 
+global target_p_death85to90_exp0 = 0.6705 
+global target_p_death90to95_exp0 = 0.7850
+*global target_p_death95to100_exp0 = 0.9036
 
 *Starting values
-local lambda_45to50l = 0
+global lambda_45to50l = 0
+global lambda_50to55l = 0
+global lambda_55to60l = 0 
+global lambda_60to65l = 0
+global lambda_65to70l = 0.02 
+global lambda_70to75l = 0.01
+global lambda_75to80l = 0.04
+global lambda_80to85l = 0.05
+global lambda_85to90l = 0.09
+global lambda_90to95l = 0.10
+*global lambda_95to100l = 0.18
+
+
+/*Target and starting values for baseline stroke hazard for whites*/
+*Target values
+global target_strokerate45to50_exp0 = 5.1
+global target_strokerate50to55_exp0 = 10.0
+global target_strokerate55to60_exp0 = 19.7
+global target_strokerate60to65_exp0 = 32.8
+global target_strokerate65to70_exp0 = 46.2
+global target_strokerate70to75_exp0 = 65.1
+global target_strokerate75to80_exp0 = 98.1
+global target_strokerate80to85_exp0 = 117.3
+global target_strokerate85to90_exp0 = 128.1
+global target_strokerate90to95_exp0 = 143.0
+
+*Starting values
+global stk_lambda_exp0_45to50l = 0
+global stk_lambda_exp0_50to55l = 0
+global stk_lambda_exp0_55to60l = 0.001
+global stk_lambda_exp0_60to65l = 0.001
+global stk_lambda_exp0_65to70l = 0.002
+global stk_lambda_exp0_70to75l = 0.004
+global stk_lambda_exp0_75to80l = 0.007
+global stk_lambda_exp0_80to85l = 0.003
+global stk_lambda_exp0_85to90l = 0.01
+global stk_lambda_exp0_90to95l = 0.01
+
+
+/*Target and starting values for baseline mortality hazard for blacks*/
+*Target values
+global target_g1_45to50 = 0.66
+global target_g1_50to55 = 0.59
+global target_g1_55to60 = 0.48
+global target_g1_60to65 = 0.32
+global target_g1_65to70 = 0.19
+global target_g1_70to75 = 0.10
+global target_g1_75to80 = -0.05
+global target_g1_80to85 = -0.10
+global target_g1_85to90 = -0.19
+global target_g1_90to95 = -0.24
+*global target_g1_95to100 = -0.33
+
+*Starting values
+global g1_45to50l = 0.1
+global g1_50to55l = 0.1
+global g1_55to60l = 0
+global g1_60to65l = 0
+global g1_65to70l = -0.05
+global g1_70to75l = -0.15
+global g1_75to80l = -0.25
+global g1_80to85l = -0.40
+global g1_85to90l = -0.55 
+global g1_90to95l = -0.70
+*global g1_95to100l = -0.85
 
 
 
 /***************************************************************************************************************/
 /***************************************************************************************************************/
-/***		Search loops for baseline mortality hazard for whites ages 45-100								 ***/
+/***		Search loops for baseline mortality hazard for whites ages 45-95								 ***/
 /***************************************************************************************************************/
 /***************************************************************************************************************/
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 45-50	  			***/
+/***		Find baseline MORTALITY hazard for whites age 45-50	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death45to50_exp0 = `target_p_death45to50_exp0' //0.0469
+   local target_p_death45to50_exp0 = $target_p_death45to50_exp0 //0.0469
    *add lower bound guess here
-   local lambda_45to50l = `lambda_45to50l'	//0.0129
+   local lambda_45to50l = $lambda_45to50l	//0.0129
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -510,16 +584,16 @@ global lambda_45to50_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 45-50	  			***/
+/***		Find baseline STROKE hazard for whites age 45-50	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate45to50_exp0 = 5.1
+   local target_strokerate45to50_exp0 = $target_strokerate45to50_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_45to50l = 0
+   local stk_lambda_exp0_45to50l = $stk_lambda_exp0_45to50l
    quietly forvalues x = 0(.0001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -929,16 +1003,16 @@ global stk_lambda_exp0_45to50_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 50-55	  			***/
+/***		Find baseline MORTALITY hazard for whites age 50-55	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death50to55_exp0 = 0.0623
+   local target_p_death50to55_exp0 = $target_p_death50to55_exp0
    *add lower bound guess here
-   local lambda_50to55l = 0	//0.0129
+   local lambda_50to55l =$lambda_50to55l	
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -1341,16 +1415,16 @@ global lambda_50to55_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 50-55	  			***/
+/***		Find baseline STROKE hazard for whites age 50-55	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate50to55_exp0 = 10.0
+   local target_strokerate50to55_exp0 = $target_strokerate50to55_exp0 
    *add lower bound guess here
-   local stk_lambda_exp0_50to55l = 0
+   local stk_lambda_exp0_50to55l = $stk_lambda_exp0_50to55l
    quietly forvalues x = 0(.0001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -1806,16 +1880,16 @@ global stk_lambda_exp0_50to55_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 55-60	  			***/
+/***		Find baseline MORTALITY hazard for whites age 55-60	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death55to60_exp0 = 0.0890
+   local target_p_death55to60_exp0 = $target_p_death55to60_exp0
    *add lower bound guess here
-   local lambda_55to60l = 0	//0.0186
+   local lambda_55to60l = $lambda_55to60l 	
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -2259,16 +2333,16 @@ global lambda_55to60_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 55-60	  			***/
+/***		Find baseline STROKE hazard for whites age 55-60	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate55to60_exp0 = 19.7
+   local target_strokerate55to60_exp0 = $target_strokerate55to60_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_55to60l = 0.001
+   local stk_lambda_exp0_55to60l = $stk_lambda_exp0_55to60l
    quietly forvalues x = 0(.0001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -2769,16 +2843,16 @@ global stk_lambda_exp0_55to60_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 60-65	  			***/ 
+/***		Find baseline MORTALITY hazard for whites age 60-65	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death60to65_exp0 = 0.1267
+   local target_p_death60to65_exp0 = $target_p_death60to65_exp0
    *add lower bound guess here
-   local lambda_60to65l = 0	//0.0271
+   local lambda_60to65l = $
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -3264,16 +3338,16 @@ global lambda_60to65_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 60-65	  			***/
+/***		Find baseline STROKE hazard for whites age 60-65	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate60to65_exp0 = 32.8
+   local target_strokerate60to65_exp0 = $target_strokerate60to65_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_60to65l = 0.001
+   local stk_lambda_exp0_60to65l = $stk_lambda_exp0_60to65l
    quietly forvalues x = 0(.0001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -3822,16 +3896,16 @@ global stk_lambda_exp0_60to65_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 65-70	  			***/ 
+/***		Find baseline MORTALITY hazard for whites age 65-70	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death65to70_exp0 = 0.1846
+   local target_p_death65to70_exp0 = $target_p_death65to70_exp0
    *add lower bound guess here
-   local lambda_65to70l = 0.02	//0.0408
+   local lambda_65to70l = $lambda_65to70l
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -4358,16 +4432,16 @@ global lambda_65to70_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 65-70	  			***/ 
+/***		Find baseline STROKE hazard for whites age 65-70	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate65to70_exp0 = 46.2
+   local target_strokerate65to70_exp0 = $target_strokerate65to70_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_65to70l = 0.002
+   local stk_lambda_exp0_65to70l = $stk_lambda_exp0_65to70l
    quietly forvalues x = 0(.0001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -4964,16 +5038,16 @@ global stk_lambda_exp0_65to70_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 70-75	  			***/ 
+/***		Find baseline MORTALITY hazard for whites age 70-75	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death70to75_exp0 = 0.2726
+   local target_p_death70to75_exp0 = $target_p_death70to75_exp0
    *add lower bound guess here
-   local lambda_70to75l = 0.01	//0.0637
+   local lambda_70to75l = $lambda_70to75l	
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -5542,16 +5616,16 @@ global lambda_70to75_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 70-75	  			***/ 
+/***		Find baseline STROKE hazard for whites age 70-75	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate70to75_exp0 = 65.1
+   local target_strokerate70to75_exp0 = $target_strokerate70to75_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_70to75l = 0.004
+   local stk_lambda_exp0_70to75l = $stk_lambda_exp0_70to75l
    quietly forvalues x = 0(.0001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -6194,16 +6268,16 @@ global stk_lambda_exp0_70to75_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 75-80	  			***/ 
+/***		Find baseline MORTALITY hazard for whites age 75-80	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death75to80_exp0 = 0.3840
+   local target_p_death75to80_exp0 = $target_p_death75to80_exp0
    *add lower bound guess here
-   local lambda_75to80l = 0.04	//0.0969 
+   local lambda_75to80l = $lambda_75to80l
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -6815,16 +6889,16 @@ global lambda_75to80_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 75-80	  			***/ 
+/***		Find baseline STROKE hazard for whites age 75-80	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate75to80_exp0 = 98.1
+   local target_strokerate75to80_exp0 = $target_strokerate75to80_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_75to80l = 0.007
+   local stk_lambda_exp0_75to80l = $stk_lambda_exp0_75to80l
    quietly forvalues x = 0(.0001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -7513,16 +7587,16 @@ global stk_lambda_exp0_75to80_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 80-85	  			***/ 
+/***		Find baseline MORTALITY hazard for whites age 80-85	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death80to85_exp0 = 0.5259 
+   local target_p_death80to85_exp0 = $target_p_death80to85_exp0
    *add lower bound guess here
-   local lambda_80to85l = 0.05	//0.1493
+   local lambda_80to85l = $lambda_80to85l
    quietly forvalues x = 0(.01)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -8176,16 +8250,16 @@ global lambda_80to85_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 80-85	  			***/ 
+/***		Find baseline STROKE hazard for whites age 80-85	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate80to85_exp0 = 117.3
+   local target_strokerate80to85_exp0 = $target_strokerate80to85_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_80to85l = 0.003
+   local stk_lambda_exp0_80to85l = $stk_lambda_exp0_80to85l
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -8919,16 +8993,16 @@ global stk_lambda_exp0_80to85_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 85-90	  			***/	
+/***		Find baseline MORTALITY hazard for whites age 85-90	    ***/	
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death85to90_exp0 = 0.6705 
+   local target_p_death85to90_exp0 = $target_p_death85to90_exp0
    *add lower bound guess here
-   local lambda_85to90l = 0.09	//0.2220
+   local lambda_85to90l = $lambda_85to90l
    quietly forvalues x = 0(.01)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -9625,16 +9699,16 @@ global lambda_85to90_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 85-90	  			***/
+/***		Find baseline STROKE hazard for whites age 85-90	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate85to90_exp0 = 128.1
+   local target_strokerate85to90_exp0 = $target_strokerate85to90_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_85to90l = 0.01
+   local stk_lambda_exp0_85to90l = $stk_lambda_exp0_85to90l
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -10417,16 +10491,16 @@ global stk_lambda_exp0_85to90_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 90-95	  			***/	 
+/***		Find baseline MORTALITY hazard for whites age 90-95	    ***/	 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death90to95_exp0 = 0.7850 
+   local target_p_death90to95_exp0 = $target_p_death90to95_exp0
    *add lower bound guess here
-   local lambda_90to95l = 0.10	//0.3074
+   local lambda_90to95l = $lambda_90to95l
    quietly forvalues x = 0(.01)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -11166,16 +11240,16 @@ global lambda_90to95_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 90-95	  			***/
+/***		Find baseline STROKE hazard for whites age 90-95	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate90to95_exp0 = 143.0
+   local target_strokerate90to95_exp0 = $target_strokerate90to95_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_90to95l = 0.01
+   local stk_lambda_exp0_90to95l = $stk_lambda_exp0_90to95l
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -12008,16 +12082,16 @@ global stk_lambda_exp0_90to95_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 95-100  			***/
-/******************************************************************************/
+/***		Find baseline MORTALITY hazard for whites age 95-100  	    ***/
+/******************************************************************************
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death95to100_exp0 = 0.9036
+   local target_p_death95to100_exp0 = $target_p_death95to100_exp0
    *add lower bound guess here
-   local lambda_95to100l = 0.18	//0.4678
+   local lambda_95to100l = $lambda_95to100l
    quietly forvalues x = 0(.01)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -12795,7 +12869,7 @@ forvalues i=1/5 {
 sum lambda_95to100
 global lambda_95to100 = `r(mean)'
 global lambda_95to100_min = `r(min)'
-global lambda_95to100_max = `r(max)'
+global lambda_95to100_max = `r(max)'*/
 
 
 
@@ -12807,7 +12881,7 @@ global lambda_95to100_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 45-50	  			***/
+/***		Find baseline MORTALITY hazard for blacks age 45-50	    ***/
 /******************************************************************************/
 clear
 
@@ -18676,8 +18750,8 @@ global g1_90to95_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 95-100			***/ 
-/******************************************************************************/
+/***		Find baseline MORTALITY hazard for blacks age 95-100	    ***/ 
+/******************************************************************************
 clear
 
 forvalues i=1/5 {
@@ -19473,7 +19547,7 @@ forvalues i=1/5 {
 sum g1_95to100
 global g1_95to100 = `r(mean)'
 global g1_95to100_min = `r(min)'
-global g1_95to100_max = `r(max)'		    
+global g1_95to100_max = `r(max)'*/		    
 
 
 
@@ -19482,6 +19556,7 @@ global g1_95to100_max = `r(max)'
 /******************************************************************************/
 capture log close
 log using global_search_results_ScenarioA_2016Sept6_corr_per10000PY, replace
+*baseline mortality hazard for whites
 dis $lambda_45to50 
 dis $lambda_50to55 
 dis $lambda_55to60 
@@ -19494,6 +19569,7 @@ dis $lambda_85to90
 dis $lambda_90to95 
 dis $lambda_95to100
 
+*baseline stroke hazard for whites
 dis $stk_lambda_exp0_45to50 
 dis $stk_lambda_exp0_50to55 
 dis $stk_lambda_exp0_55to60 
@@ -19505,6 +19581,7 @@ dis $stk_lambda_exp0_80to85
 dis $stk_lambda_exp0_85to90 
 dis $stk_lambda_exp0_90to95 
 
+*baseline mortality hazard for blacks
 dis $g1_45to50 
 dis $g1_50to55 
 dis $g1_55to60 
@@ -19517,7 +19594,9 @@ dis $g1_85to90
 dis $g1_90to95 
 dis $g1_95to100
 
+
 /*mins*/
+*baseline mortality hazard for whites
 dis $lambda_45to50_min 
 dis $lambda_50to55_min  
 dis $lambda_55to60_min  
@@ -19530,6 +19609,7 @@ dis $lambda_85to90_min
 dis $lambda_90to95_min  
 dis $lambda_95to100_min 
 
+*baseline stroke hazard for whites
 dis $stk_lambda_exp0_45to50_min  
 dis $stk_lambda_exp0_50to55_min  
 dis $stk_lambda_exp0_55to60_min  
@@ -19541,6 +19621,7 @@ dis $stk_lambda_exp0_80to85_min
 dis $stk_lambda_exp0_85to90_min  
 dis $stk_lambda_exp0_90to95_min  
 
+*baseline mortality hazard for blacks
 dis $g1_45to50_min
 dis $g1_50to55_min 
 dis $g1_55to60_min 
@@ -19552,6 +19633,46 @@ dis $g1_80to85_min
 dis $g1_85to90_min 
 dis $g1_90to95_min 
 dis $g1_95to100_min
+
+
+/*starting values*/
+*baseline mortality hazard for whites
+global lambda_45to50l = 0
+global lambda_50to55l = 0
+global lambda_55to60l = 0 
+global lambda_60to65l = 0
+global lambda_65to70l = 0.02 
+global lambda_70to75l = 0.01
+global lambda_75to80l = 0.04
+global lambda_80to85l = 0.05
+global lambda_85to90l = 0.09
+global lambda_90to95l = 0.10
+*global lambda_95to100l = 0.18
+
+*baseline stroke hazard for whites
+global stk_lambda_exp0_45to50l = 0
+global stk_lambda_exp0_50to55l = 0
+global stk_lambda_exp0_55to60l = 0.001
+global stk_lambda_exp0_60to65l = 0.001
+global stk_lambda_exp0_65to70l = 0.002
+global stk_lambda_exp0_70to75l = 0.004
+global stk_lambda_exp0_75to80l = 0.007
+global stk_lambda_exp0_80to85l = 0.003
+global stk_lambda_exp0_85to90l = 0.01
+global stk_lambda_exp0_90to95l = 0.01
+
+*baseline mortality hazard for blacks
+global g1_45to50l = 0.1
+global g1_50to55l = 0.1
+global g1_55to60l = 0
+global g1_60to65l = 0
+global g1_65to70l = -0.05
+global g1_70to75l = -0.15
+global g1_75to80l = -0.25
+global g1_80to85l = -0.40
+global g1_85to90l = -0.55 
+global g1_90to95l = -0.70
+*global g1_95to100l = -0.85
 
 
 capture log close
