@@ -2852,7 +2852,7 @@ forvalues i=1/5 {
    local toolow =1
    local target_p_death60to65_exp0 = $target_p_death60to65_exp0
    *add lower bound guess here
-   local lambda_60to65l = $
+   local lambda_60to65l = $lambda_60to65l
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
