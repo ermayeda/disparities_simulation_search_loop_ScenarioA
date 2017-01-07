@@ -1,12 +1,12 @@
 /******************************************************************************/
-/***	Scenario A (U influences stroke but not mortality) search loop 		***/
-/***	program.															***/
+/***	Scenario A (U influences stroke but not mortality) search loop 	    ***/
+/***	program.							    ***/
 /***	This program searches for baseline mortality hazards (after age 45) ***/
-/***	for exp=0 and exp=1 to line up with US Life Tables. 				***/
+/***	for exp=0 and exp=1 to line up with US Life Tables. 		    ***/
 /***	The search loop is needed because stroke kills people: pstrokedeath ***/
-/***	die at stroke and g4 for effect of stroke history on death.		 	***/
-/***	The program also searches for baseline stroke hazards for whites,	***/
-/***	since U causes stroke.												***/
+/***	die at stroke and g4 for effect of stroke history on death.	    ***/
+/***	The program also searches for baseline stroke hazards for whites,   ***/
+/***	since U causes stroke.						    ***/
 /******************************************************************************/
 
 set more off
@@ -116,31 +116,116 @@ global pstrokedeath = 0.25
 /******************************************************************************/
 
 
-* challenge: we want the same number of peopel having strokes after we add U.
+/*Challenge: we want the same number of people having strokes after we add U.
 
-*this is a do file to run the data generating do file with different values for the baseline mortality odds
-* start with a value for the target that is definitely toolow,
-* then it should notify you at the first increment where you are no longer
-* too low
+This is a do file to run the data generating do file with different values for 
+the baseline mortality odds start with a value for the target that is definitely 
+too low for the target stroke or cumulative mortality within each age band. 
+The search loop will stop at the first increment where the start value results 
+in a stroke rate/cumulative mortality >=the target stroke rate/cumulative 
+mortality.*/
+
+/*Target and starting values for baseline mortality hazard for whites*/
+*Target values
+global target_p_death45to50_exp0 = 0.0469
+global target_p_death50to55_exp0 = 0.0623
+global target_p_death55to60_exp0 = 0.0890
+global target_p_death60to65_exp0 = 0.1267
+global target_p_death65to70_exp0 = 0.1846
+global target_p_death70to75_exp0 = 0.2726
+global target_p_death75to80_exp0 = 0.3840
+global target_p_death80to85_exp0 = 0.5259 
+global target_p_death85to90_exp0 = 0.6705 
+global target_p_death90to95_exp0 = 0.7850
+*global target_p_death95to100_exp0 = 0.9036
+
+*Starting values
+global lambda_45to50l = 0
+global lambda_50to55l = 0
+global lambda_55to60l = 0 
+global lambda_60to65l = 0
+global lambda_65to70l = 0.02 
+global lambda_70to75l = 0.01
+global lambda_75to80l = 0.04
+global lambda_80to85l = 0.05
+global lambda_85to90l = 0.09
+global lambda_90to95l = 0.10
+*global lambda_95to100l = 0.18
+
+
+/*Target and starting values for baseline stroke hazard for whites*/
+*Target values
+global target_strokerate45to50_exp0 = 4.8
+global target_strokerate50to55_exp0 = 11.3
+global target_strokerate55to60_exp0 = 20.3
+global target_strokerate60to65_exp0 = 32.9
+global target_strokerate65to70_exp0 = 48.0
+global target_strokerate70to75_exp0 = 68.8
+global target_strokerate75to80_exp0 = 101.6
+global target_strokerate80to85_exp0 = 127.3
+global target_strokerate85to90_exp0 = 142.2
+global target_strokerate90to95_exp0 = 166.6
+
+*Starting values
+global stk_lambda_exp0_45to50l = 0
+global stk_lambda_exp0_50to55l = 0
+global stk_lambda_exp0_55to60l = 0.001
+global stk_lambda_exp0_60to65l = 0.001
+global stk_lambda_exp0_65to70l = 0.002
+global stk_lambda_exp0_70to75l = 0.004
+global stk_lambda_exp0_75to80l = 0.007
+global stk_lambda_exp0_80to85l = 0.003
+global stk_lambda_exp0_85to90l = 0.01
+global stk_lambda_exp0_90to95l = 0.01
+
+
+/*Target and starting values for baseline mortality hazard for blacks*/
+*Target values
+global target_g1_45to50 = 0.66
+global target_g1_50to55 = 0.59
+global target_g1_55to60 = 0.48
+global target_g1_60to65 = 0.32
+global target_g1_65to70 = 0.19
+global target_g1_70to75 = 0.10
+global target_g1_75to80 = -0.05
+global target_g1_80to85 = -0.10
+global target_g1_85to90 = -0.19
+global target_g1_90to95 = -0.24
+*global target_g1_95to100 = -0.33
+
+*Starting values
+global g1_45to50l = 0.1
+global g1_50to55l = 0.1
+global g1_55to60l = 0
+global g1_60to65l = 0
+global g1_65to70l = -0.05
+global g1_70to75l = -0.15
+global g1_75to80l = -0.25
+global g1_80to85l = -0.40
+global g1_85to90l = -0.55 
+global g1_90to95l = -0.70
+*global g1_95to100l = -0.85
+
+
 
 /***************************************************************************************************************/
 /***************************************************************************************************************/
-/***		Search loops for baseline mortality hazard for whites ages 45-100								 ***/
+/***		Search loops for baseline mortality hazard for whites ages 45-95								 ***/
 /***************************************************************************************************************/
 /***************************************************************************************************************/
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 45-50	  			***/
+/***		Find baseline MORTALITY hazard for whites age 45-50	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death45to50_exp0 = 0.0469
+   local target_p_death45to50_exp0 = $target_p_death45to50_exp0 
    *add lower bound guess here
-   local lambda_45to50l = 0	//0.0129
+   local lambda_45to50l = $lambda_45to50l	
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -262,15 +347,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -501,16 +586,16 @@ global lambda_45to50_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 45-50	  			***/
+/***		Find baseline STROKE hazard for whites age 45-50	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate45to50_exp0 = 5.1
+   local target_strokerate45to50_exp0 = $target_strokerate45to50_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_45to50l = 0
+   local stk_lambda_exp0_45to50l = $stk_lambda_exp0_45to50l
    quietly forvalues x = 0(.0001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -632,15 +717,15 @@ forvalues i=1/5 {
 		at each interval. 
 		a. Each person's underlying time to death is generated for each age interval, 
 		conditional on the past provided the person has not died in a previous interval, 
-		under an exponential survival distribtion. If the person’s generated survival 
+		under an exponential survival distribtion. If the personÂ’s generated survival 
 		time exceeds the length of the interval between study visits j and j+1, 
 		she is considered alive at study visit j+1 and a new survival time is 
 		generated for the next interval conditional on history up to the start of the 
-		interval, and the process is repeated until the person’s survival time falls 
+		interval, and the process is repeated until the personÂ’s survival time falls 
 		within a given interval or the end of the study, whichever comes first. Each 
-		person’s hazard function is defined as:
+		personÂ’s hazard function is defined as:
 		h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-		A person’s survival time for a given time interval at risk is generated using 
+		A personÂ’s survival time for a given time interval at risk is generated using 
 		the inverse cumulative hazard function transformation formula described by 
 		Bender et al. (Stat Med 2011)
 		b. Stroke code is adapted for survival time code.*/
@@ -920,16 +1005,16 @@ global stk_lambda_exp0_45to50_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 50-55	  			***/
+/***		Find baseline MORTALITY hazard for whites age 50-55	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death50to55_exp0 = 0.0623
+   local target_p_death50to55_exp0 = $target_p_death50to55_exp0
    *add lower bound guess here
-   local lambda_50to55l = 0	//0.0129
+   local lambda_50to55l =$lambda_50to55l	
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -1051,15 +1136,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -1332,16 +1417,16 @@ global lambda_50to55_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 50-55	  			***/
+/***		Find baseline STROKE hazard for whites age 50-55	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate50to55_exp0 = 10.0
+   local target_strokerate50to55_exp0 = $target_strokerate50to55_exp0 
    *add lower bound guess here
-   local stk_lambda_exp0_50to55l = 0
+   local stk_lambda_exp0_50to55l = $stk_lambda_exp0_50to55l
    quietly forvalues x = 0(.0001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -1463,15 +1548,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -1797,16 +1882,16 @@ global stk_lambda_exp0_50to55_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 55-60	  			***/
+/***		Find baseline MORTALITY hazard for whites age 55-60	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death55to60_exp0 = 0.0890
+   local target_p_death55to60_exp0 = $target_p_death55to60_exp0
    *add lower bound guess here
-   local lambda_55to60l = 0	//0.0186
+   local lambda_55to60l = $lambda_55to60l 	
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -1928,15 +2013,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -2250,16 +2335,16 @@ global lambda_55to60_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 55-60	  			***/
+/***		Find baseline STROKE hazard for whites age 55-60	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate55to60_exp0 = 19.7
+   local target_strokerate55to60_exp0 = $target_strokerate55to60_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_55to60l = 0.001
+   local stk_lambda_exp0_55to60l = $stk_lambda_exp0_55to60l
    quietly forvalues x = 0(.0001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -2380,15 +2465,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -2760,16 +2845,16 @@ global stk_lambda_exp0_55to60_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 60-65	  			***/ 
+/***		Find baseline MORTALITY hazard for whites age 60-65	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death60to65_exp0 = 0.1267
+   local target_p_death60to65_exp0 = $target_p_death60to65_exp0
    *add lower bound guess here
-   local lambda_60to65l = 0	//0.0271
+   local lambda_60to65l = $lambda_60to65l
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -2891,15 +2976,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -3255,16 +3340,16 @@ global lambda_60to65_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 60-65	  			***/
+/***		Find baseline STROKE hazard for whites age 60-65	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate60to65_exp0 = 32.8
+   local target_strokerate60to65_exp0 = $target_strokerate60to65_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_60to65l = 0.001
+   local stk_lambda_exp0_60to65l = $stk_lambda_exp0_60to65l
    quietly forvalues x = 0(.0001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -3386,15 +3471,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -3813,16 +3898,16 @@ global stk_lambda_exp0_60to65_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 65-70	  			***/ 
+/***		Find baseline MORTALITY hazard for whites age 65-70	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death65to70_exp0 = 0.1846
+   local target_p_death65to70_exp0 = $target_p_death65to70_exp0
    *add lower bound guess here
-   local lambda_65to70l = 0.02	//0.0408
+   local lambda_65to70l = $lambda_65to70l
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -3944,15 +4029,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -4349,16 +4434,16 @@ global lambda_65to70_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 65-70	  			***/ 
+/***		Find baseline STROKE hazard for whites age 65-70	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate65to70_exp0 = 46.2
+   local target_strokerate65to70_exp0 = $target_strokerate65to70_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_65to70l = 0.002
+   local stk_lambda_exp0_65to70l = $stk_lambda_exp0_65to70l
    quietly forvalues x = 0(.0001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -4481,15 +4566,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -4955,16 +5040,16 @@ global stk_lambda_exp0_65to70_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 70-75	  			***/ 
+/***		Find baseline MORTALITY hazard for whites age 70-75	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death70to75_exp0 = 0.2726
+   local target_p_death70to75_exp0 = $target_p_death70to75_exp0
    *add lower bound guess here
-   local lambda_70to75l = 0.01	//0.0637
+   local lambda_70to75l = $lambda_70to75l	
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -5086,15 +5171,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -5533,16 +5618,16 @@ global lambda_70to75_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 70-75	  			***/ 
+/***		Find baseline STROKE hazard for whites age 70-75	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate70to75_exp0 = 65.1
+   local target_strokerate70to75_exp0 = $target_strokerate70to75_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_70to75l = 0.004
+   local stk_lambda_exp0_70to75l = $stk_lambda_exp0_70to75l
    quietly forvalues x = 0(.0001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -5664,15 +5749,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -6185,16 +6270,16 @@ global stk_lambda_exp0_70to75_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 75-80	  			***/ 
+/***		Find baseline MORTALITY hazard for whites age 75-80	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death75to80_exp0 = 0.3840
+   local target_p_death75to80_exp0 = $target_p_death75to80_exp0
    *add lower bound guess here
-   local lambda_75to80l = 0.04	//0.0969 
+   local lambda_75to80l = $lambda_75to80l
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -6316,15 +6401,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -6806,16 +6891,16 @@ global lambda_75to80_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 75-80	  			***/ 
+/***		Find baseline STROKE hazard for whites age 75-80	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate75to80_exp0 = 98.1
+   local target_strokerate75to80_exp0 = $target_strokerate75to80_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_75to80l = 0.007
+   local stk_lambda_exp0_75to80l = $stk_lambda_exp0_75to80l
    quietly forvalues x = 0(.0001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -6937,15 +7022,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -7504,16 +7589,16 @@ global stk_lambda_exp0_75to80_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 80-85	  			***/ 
+/***		Find baseline MORTALITY hazard for whites age 80-85	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death80to85_exp0 = 0.5259 
+   local target_p_death80to85_exp0 = $target_p_death80to85_exp0
    *add lower bound guess here
-   local lambda_80to85l = 0.05	//0.1493
+   local lambda_80to85l = $lambda_80to85l
    quietly forvalues x = 0(.01)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -7635,15 +7720,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -8167,16 +8252,16 @@ global lambda_80to85_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 80-85	  			***/ 
+/***		Find baseline STROKE hazard for whites age 80-85	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate80to85_exp0 = 117.3
+   local target_strokerate80to85_exp0 = $target_strokerate80to85_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_80to85l = 0.003
+   local stk_lambda_exp0_80to85l = $stk_lambda_exp0_80to85l
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -8298,15 +8383,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -8910,16 +8995,16 @@ global stk_lambda_exp0_80to85_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 85-90	  			***/	
+/***		Find baseline MORTALITY hazard for whites age 85-90	    ***/	
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death85to90_exp0 = 0.6705 
+   local target_p_death85to90_exp0 = $target_p_death85to90_exp0
    *add lower bound guess here
-   local lambda_85to90l = 0.09	//0.2220
+   local lambda_85to90l = $lambda_85to90l
    quietly forvalues x = 0(.01)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -9041,15 +9126,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -9616,16 +9701,16 @@ global lambda_85to90_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 85-90	  			***/
+/***		Find baseline STROKE hazard for whites age 85-90	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate85to90_exp0 = 128.1
+   local target_strokerate85to90_exp0 = $target_strokerate85to90_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_85to90l = 0.01
+   local stk_lambda_exp0_85to90l = $stk_lambda_exp0_85to90l
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -9747,15 +9832,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -10408,16 +10493,16 @@ global stk_lambda_exp0_85to90_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 90-95	  			***/	 
+/***		Find baseline MORTALITY hazard for whites age 90-95	    ***/	 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death90to95_exp0 = 0.7850 
+   local target_p_death90to95_exp0 = $target_p_death90to95_exp0
    *add lower bound guess here
-   local lambda_90to95l = 0.10	//0.3074
+   local lambda_90to95l = $lambda_90to95l
    quietly forvalues x = 0(.01)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -10539,15 +10624,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -11157,16 +11242,16 @@ global lambda_90to95_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline STROKE hazard for whites age 90-95	  			***/
+/***		Find baseline STROKE hazard for whites age 90-95	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_strokerate90to95_exp0 = 143.0
+   local target_strokerate90to95_exp0 = $target_strokerate90to95_exp0
    *add lower bound guess here
-   local stk_lambda_exp0_90to95l = 0.01
+   local stk_lambda_exp0_90to95l = $stk_lambda_exp0_90to95l
    quietly forvalues x = 0(.001)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -11288,15 +11373,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -11999,16 +12084,16 @@ global stk_lambda_exp0_90to95_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for whites age 95-100  			***/
-/******************************************************************************/
+/***		Find baseline MORTALITY hazard for whites age 95-100  	    ***/
+/******************************************************************************
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_p_death95to100_exp0 = 0.9036
+   local target_p_death95to100_exp0 = $target_p_death95to100_exp0
    *add lower bound guess here
-   local lambda_95to100l = 0.18	//0.4678
+   local lambda_95to100l = $lambda_95to100l
    quietly forvalues x = 0(.01)30 { //0(.0001)30 {
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -12129,15 +12214,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -12786,7 +12871,7 @@ forvalues i=1/5 {
 sum lambda_95to100
 global lambda_95to100 = `r(mean)'
 global lambda_95to100_min = `r(min)'
-global lambda_95to100_max = `r(max)'
+global lambda_95to100_max = `r(max)'*/
 
 
 
@@ -12798,16 +12883,16 @@ global lambda_95to100_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 45-50	  			***/
+/***		Find baseline MORTALITY hazard for blacks age 45-50	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_45to50 = 0.66
+   local target_g1_45to50 = $target_g1_45to50
    *add lower bound guess here
-   local g1_45to50l = 0.1
+   local g1_45to50l = $g1_45to50l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -12877,7 +12962,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -12929,15 +13014,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -13196,16 +13281,16 @@ global g1_45to50_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 50-55	  			***/
+/***		Find baseline MORTALITY hazard for blacks age 50-55	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_50to55 = 0.59
+   local target_g1_50to55 = $target_g1_50to55
    *add lower bound guess here
-   local g1_50to55l = 0.1
+   local g1_50to55l = $g1_50to55l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -13275,7 +13360,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -13327,15 +13412,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -13636,16 +13721,16 @@ global g1_50to55_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 55-60	  			***/
+/***		Find baseline MORTALITY hazard for blacks age 55-60	    ***/
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_55to60 = 0.48
+   local target_g1_55to60 = $target_g1_55to60 
    *add lower bound guess here
-   local g1_55to60l = 0
+   local g1_55to60l = $g1_55to60l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -13715,7 +13800,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -13767,15 +13852,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -14117,16 +14202,16 @@ global g1_55to60_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 60-65  			***/ 
+/***		Find baseline MORTALITY hazard for blacks age 60-65  	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_60to65 = 0.32
+   local target_g1_60to65 = $target_g1_60to65
    *add lower bound guess here
-   local g1_60to65l = 0
+   local g1_60to65l = $g1_60to65l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -14196,7 +14281,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -14248,15 +14333,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -14641,16 +14726,16 @@ global g1_60to65_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 65-70 			***/ 
+/***		Find baseline MORTALITY hazard for blacks age 65-70 	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_65to70 = 0.19
+   local target_g1_65to70 = $target_g1_65to70
    *add lower bound guess here
-   local g1_65to70l = -0.05
+   local g1_65to70l = $g1_65to70l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -14720,7 +14805,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -14772,15 +14857,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -15206,16 +15291,16 @@ global g1_65to70_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 70-75				***/ 
+/***		Find baseline MORTALITY hazard for blacks age 70-75	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_70to75 = 0.10
+   local target_g1_70to75 = $target_g1_70to75
    *add lower bound guess here
-   local g1_70to75l = -0.15
+   local g1_70to75l = $g1_70to75l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -15285,7 +15370,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -15337,15 +15422,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -15813,16 +15898,16 @@ global g1_70to75_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 75-80				***/ 
+/***		Find baseline MORTALITY hazard for blacks age 75-80	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_75to80 = -0.05
+   local target_g1_75to80 = $target_g1_75to80
    *add lower bound guess here
-   local g1_75to80l = -0.25
+   local g1_75to80l = $g1_75to80l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -15892,7 +15977,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -15944,15 +16029,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -16461,16 +16546,16 @@ global g1_75to80_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 80-85				***/ 
+/***		Find baseline MORTALITY hazard for blacks age 80-85	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_80to85 = -0.10
+   local target_g1_80to85 = $target_g1_80to85
    *add lower bound guess here
-   local g1_80to85l = -0.40
+   local g1_80to85l = $g1_80to85l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -16540,7 +16625,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -16592,15 +16677,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -17153,16 +17238,16 @@ global g1_80to85_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 85-90				***/ 
+/***		Find baseline MORTALITY hazard for blacks age 85-90	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_85to90 = -0.19
+   local target_g1_85to90 = $target_g1_85to90
    *add lower bound guess here
-   local g1_85to90l = -0.55
+   local g1_85to90l = $g1_85to90l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -17232,7 +17317,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -17284,15 +17369,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -17888,16 +17973,16 @@ global g1_85to90_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 90-95				***/ 
+/***		Find baseline MORTALITY hazard for blacks age 90-95	    ***/ 
 /******************************************************************************/
 clear
 
 forvalues i=1/5 {
    clear
    local toolow =1
-   local target_g1_90to95 = -0.24
+   local target_g1_90to95 = $target_g1_90to95
    *add lower bound guess here
-   local g1_90to95l = -0.70
+   local g1_90to95l = $g1_90to95l
    quietly forvalues x = 0(.01)30 { 
       if `toolow'==1 {
          local seed = 8675309 + `i'
@@ -17967,7 +18052,7 @@ forvalues i=1/5 {
 			local lambda_80to85 = 	$lambda_80to85
 			local lambda_85to90 = 	$lambda_85to90
 			local lambda_90to95 = 	$lambda_90to95
-			local lambda_95to100 =	$lambda_95to100
+			*local lambda_95to100 =	$lambda_95to100
 
 
 			*baseline hazard of stroke (exp=0 whites), based on Howard Ann Neurol 2011
@@ -18019,15 +18104,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -18667,8 +18752,8 @@ global g1_90to95_max = `r(max)'
 
 
 /******************************************************************************/
-/***		Find baseline MORTALITY hazard for blacks age 95-100			***/ 
-/******************************************************************************/
+/***		Find baseline MORTALITY hazard for blacks age 95-100	    ***/ 
+/******************************************************************************
 clear
 
 forvalues i=1/5 {
@@ -18798,15 +18883,15 @@ forvalues i=1/5 {
 			at each interval. 
 			a. Each person's underlying time to death is generated for each age interval, 
 			conditional on the past provided the person has not died in a previous interval, 
-			under an exponential survival distribtion. If the person’s generated survival 
+			under an exponential survival distribtion. If the personÂ’s generated survival 
 			time exceeds the length of the interval between study visits j and j+1, 
 			she is considered alive at study visit j+1 and a new survival time is 
 			generated for the next interval conditional on history up to the start of the 
-			interval, and the process is repeated until the person’s survival time falls 
+			interval, and the process is repeated until the personÂ’s survival time falls 
 			within a given interval or the end of the study, whichever comes first. Each 
-			person’s hazard function is defined as:
+			personÂ’s hazard function is defined as:
 			h(tij|x) = lambda*exp(g1*exposurei + g2*Ui + g3*exposurei*Ui + g4*stroke_historyi)
-			A person’s survival time for a given time interval at risk is generated using 
+			A personÂ’s survival time for a given time interval at risk is generated using 
 			the inverse cumulative hazard function transformation formula described by 
 			Bender et al. (Stat Med 2011)
 			b. Stroke code is adapted for survival time code.*/
@@ -19464,7 +19549,7 @@ forvalues i=1/5 {
 sum g1_95to100
 global g1_95to100 = `r(mean)'
 global g1_95to100_min = `r(min)'
-global g1_95to100_max = `r(max)'		    
+global g1_95to100_max = `r(max)'*/		    
 
 
 
@@ -19473,6 +19558,7 @@ global g1_95to100_max = `r(max)'
 /******************************************************************************/
 capture log close
 log using global_search_results_ScenarioA_2016Sept6_corr_per10000PY, replace
+*baseline mortality hazard for whites
 dis $lambda_45to50 
 dis $lambda_50to55 
 dis $lambda_55to60 
@@ -19485,6 +19571,7 @@ dis $lambda_85to90
 dis $lambda_90to95 
 dis $lambda_95to100
 
+*baseline stroke hazard for whites
 dis $stk_lambda_exp0_45to50 
 dis $stk_lambda_exp0_50to55 
 dis $stk_lambda_exp0_55to60 
@@ -19496,6 +19583,7 @@ dis $stk_lambda_exp0_80to85
 dis $stk_lambda_exp0_85to90 
 dis $stk_lambda_exp0_90to95 
 
+*baseline mortality hazard for blacks
 dis $g1_45to50 
 dis $g1_50to55 
 dis $g1_55to60 
@@ -19508,7 +19596,9 @@ dis $g1_85to90
 dis $g1_90to95 
 dis $g1_95to100
 
+
 /*mins*/
+*baseline mortality hazard for whites
 dis $lambda_45to50_min 
 dis $lambda_50to55_min  
 dis $lambda_55to60_min  
@@ -19521,6 +19611,7 @@ dis $lambda_85to90_min
 dis $lambda_90to95_min  
 dis $lambda_95to100_min 
 
+*baseline stroke hazard for whites
 dis $stk_lambda_exp0_45to50_min  
 dis $stk_lambda_exp0_50to55_min  
 dis $stk_lambda_exp0_55to60_min  
@@ -19532,6 +19623,7 @@ dis $stk_lambda_exp0_80to85_min
 dis $stk_lambda_exp0_85to90_min  
 dis $stk_lambda_exp0_90to95_min  
 
+*baseline mortality hazard for blacks
 dis $g1_45to50_min
 dis $g1_50to55_min 
 dis $g1_55to60_min 
@@ -19543,6 +19635,46 @@ dis $g1_80to85_min
 dis $g1_85to90_min 
 dis $g1_90to95_min 
 dis $g1_95to100_min
+
+
+/*starting values*/
+*baseline mortality hazard for whites
+global lambda_45to50l = 0
+global lambda_50to55l = 0
+global lambda_55to60l = 0 
+global lambda_60to65l = 0
+global lambda_65to70l = 0.02 
+global lambda_70to75l = 0.01
+global lambda_75to80l = 0.04
+global lambda_80to85l = 0.05
+global lambda_85to90l = 0.09
+global lambda_90to95l = 0.10
+*global lambda_95to100l = 0.18
+
+*baseline stroke hazard for whites
+global stk_lambda_exp0_45to50l = 0
+global stk_lambda_exp0_50to55l = 0
+global stk_lambda_exp0_55to60l = 0.001
+global stk_lambda_exp0_60to65l = 0.001
+global stk_lambda_exp0_65to70l = 0.002
+global stk_lambda_exp0_70to75l = 0.004
+global stk_lambda_exp0_75to80l = 0.007
+global stk_lambda_exp0_80to85l = 0.003
+global stk_lambda_exp0_85to90l = 0.01
+global stk_lambda_exp0_90to95l = 0.01
+
+*baseline mortality hazard for blacks
+global g1_45to50l = 0.1
+global g1_50to55l = 0.1
+global g1_55to60l = 0
+global g1_60to65l = 0
+global g1_65to70l = -0.05
+global g1_70to75l = -0.15
+global g1_75to80l = -0.25
+global g1_80to85l = -0.40
+global g1_85to90l = -0.55 
+global g1_90to95l = -0.70
+*global g1_95to100l = -0.85
 
 
 capture log close
